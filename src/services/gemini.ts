@@ -1,6 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY chưa được cấu hình. Vui lòng kiểm tra Environment Variables trên Vercel.");
+  }
+  if (!aiInstance) {
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export interface MixedContent {
   title: string;
@@ -10,9 +21,7 @@ export interface MixedContent {
 }
 
 export async function mixContent(originalText: string): Promise<MixedContent> {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is not configured.");
-  }
+  const ai = getAI();
 
   const prompt = `
     Bạn là một chuyên gia SEO và Content Writer chuyên nghiệp cấp cao. 
@@ -52,8 +61,14 @@ export async function mixContent(originalText: string): Promise<MixedContent> {
 
     const result = JSON.parse(response.text || "{}");
     return result as MixedContent;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error mixing content:", error);
-    throw error;
+    if (error?.message?.includes("API_KEY_INVALID")) {
+      throw new Error("API Key không hợp lệ. Vui lòng kiểm tra lại cấu hình.");
+    }
+    if (error?.message?.includes("quota")) {
+      throw new Error("Hết hạn mức sử dụng API (Quota exceeded).");
+    }
+    throw new Error(error?.message || "Lỗi kết nối với Gemini AI.");
   }
 }

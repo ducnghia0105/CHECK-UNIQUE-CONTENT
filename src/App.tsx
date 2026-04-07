@@ -80,8 +80,8 @@ export default function App() {
     try {
       const mixed = await mixContent(inputText);
       setResult(mixed);
-    } catch (err) {
-      setError('Có lỗi xảy ra khi xử lý nội dung. Vui lòng thử lại.');
+    } catch (err: any) {
+      setError(err.message || 'Có lỗi xảy ra khi xử lý nội dung. Vui lòng thử lại.');
       console.error(err);
     } finally {
       setIsProcessing(false);
