@@ -6,11 +6,15 @@ import {defineConfig, loadEnv} from 'vite';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  const gptKey = env.GPT_KEY || process.env.GPT_KEY;
+  const gptModel = env.GPT_MODEL || process.env.GPT_MODEL || 'gpt-4o-mini';
 
   return {
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(apiKey),
+      'process.env.GPT_KEY': JSON.stringify(gptKey),
+      'process.env.GPT_MODEL': JSON.stringify(gptModel),
     },
     resolve: {
       alias: {

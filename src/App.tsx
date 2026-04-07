@@ -16,7 +16,7 @@ import {
   X,
   FileDown
 } from 'lucide-react';
-import { mixContent, MixedContent } from './services/gemini';
+import { mixContent, MixedContent, AIProvider } from './services/aiService';
 
 export default function App() {
   const [inputText, setInputText] = useState<string>('');
@@ -295,7 +295,9 @@ ${result.mainContent}
                       <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
                       <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-600" size={24} />
                     </div>
-                    <p className="mt-6 font-bold text-gray-700 animate-pulse">Gemini đang sáng tạo...</p>
+                    <p className="mt-6 font-bold text-gray-700 animate-pulse">
+                      {process.env.GEMINI_API_KEY ? 'Gemini đang sáng tạo...' : 'GPT đang sáng tạo...'}
+                    </p>
                     <p className="text-xs text-gray-400 mt-2">Quá trình này có thể mất vài giây</p>
                   </motion.div>
                 )}
@@ -310,7 +312,12 @@ ${result.mainContent}
                     {/* Title Card */}
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-1 rounded">Tiêu đề SEO</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-1 rounded">Tiêu đề SEO</span>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${result.provider === 'Gemini' ? 'text-purple-500 bg-purple-50' : 'text-green-500 bg-green-50'}`}>
+                            Sử dụng: {result.provider}
+                          </span>
+                        </div>
                         <button 
                           onClick={() => copyToClipboard(result.title)}
                           className="text-gray-400 hover:text-blue-500 transition-colors"
