@@ -11,6 +11,7 @@ export interface MixedContent {
   shortDescription: string;
   detailedDescription: string;
   mainContent: string;
+  uniquenessScore: number;
   provider: AIProvider;
 }
 
@@ -57,6 +58,7 @@ export async function mixContent(originalText: string): Promise<MixedContent> {
     - shortDescription: Meta description
     - detailedDescription: Giới thiệu tổng quan
     - mainContent: Nội dung chính với thẻ HTML
+    - uniquenessScore: Ước tính tỷ lệ unique (%) so với bản gốc (số từ 0-100)
   `;
 
   // Try Gemini first
@@ -74,8 +76,9 @@ export async function mixContent(originalText: string): Promise<MixedContent> {
               shortDescription: { type: Type.STRING },
               detailedDescription: { type: Type.STRING },
               mainContent: { type: Type.STRING },
+              uniquenessScore: { type: Type.NUMBER },
             },
-            required: ["title", "shortDescription", "detailedDescription", "mainContent"],
+            required: ["title", "shortDescription", "detailedDescription", "mainContent", "uniquenessScore"],
           },
         },
       });

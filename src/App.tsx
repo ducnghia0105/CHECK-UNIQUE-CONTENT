@@ -14,7 +14,8 @@ import {
   FileCode,
   Eye,
   X,
-  FileDown
+  FileDown,
+  ShieldCheck
 } from 'lucide-react';
 import { mixContent, MixedContent, AIProvider } from './services/aiService';
 
@@ -309,6 +310,27 @@ ${result.mainContent}
                     animate={{ opacity: 1, scale: 1 }}
                     className="space-y-6"
                   >
+                    {/* Uniqueness Score Card */}
+                    <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${result.uniquenessScore >= 80 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                          <ShieldCheck size={22} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tỷ lệ Unique ước tính</p>
+                          <p className="text-lg font-black">{result.uniquenessScore}%</p>
+                        </div>
+                      </div>
+                      <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${result.uniquenessScore}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className={`h-full ${result.uniquenessScore >= 80 ? 'bg-green-500' : 'bg-orange-500'}`}
+                        />
+                      </div>
+                    </div>
+
                     {/* Title Card */}
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
                       <div className="flex items-center justify-between">
@@ -374,7 +396,7 @@ ${result.mainContent}
                           className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all shadow-xl active:scale-[0.98]"
                         >
                           <Download size={20} />
-                          Xuất tệp .txt
+                          Xuất tệp .txt ( html )
                         </button>
 
                         <button
