@@ -1,5 +1,7 @@
 import { useState, useRef, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import mammoth from 'mammoth';
+import { saveAs } from 'file-saver';
 import { 
   FileText, 
   Upload, 
@@ -9,7 +11,10 @@ import {
   CheckCircle2, 
   AlertCircle,
   Copy,
-  FileCode
+  FileCode,
+  Eye,
+  X,
+  FileDown
 } from 'lucide-react';
 import { mixContent, MixedContent } from './services/gemini';
 
@@ -20,26 +25,46 @@ export default function App() {
   const [result, setResult] = useState<MixedContent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'text/plain' && !file.name.endsWith('.txt')) {
-      setError('Vui lòng chọn tệp .txt');
+    const isTxt = file.name.endsWith('.txt');
+    const isDocx = file.name.endsWith('.docx');
+    const isDoc = file.name.endsWith('.doc');
+
+    if (!isTxt && !isDocx && !isDoc) {
+      setError('Vui lòng chọn tệp .txt, .doc hoặc .docx');
       return;
     }
 
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setInputText(content);
-      setError(null);
-    };
-    reader.readAsText(file);
+    setError(null);
+
+    try {
+      if (isDocx) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        setInputText(result.value);
+      } else if (isTxt) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          setInputText(content);
+        };
+        reader.readAsText(file);
+      } else if (isDoc) {
+        setError('Tệp .doc (cũ) không được hỗ trợ tốt trong trình duyệt. Vui lòng chuyển sang .docx hoặc .txt');
+        setInputText('');
+      }
+    } catch (err) {
+      setError('Không thể đọc tệp này. Vui lòng kiểm tra lại định dạng.');
+      console.error(err);
+    }
   };
 
   const handleMix = async () => {
@@ -63,7 +88,7 @@ export default function App() {
     }
   };
 
-  const handleExport = () => {
+  const handleExportTxt = () => {
     if (!result) return;
 
     const exportContent = `
@@ -76,14 +101,37 @@ ${result.mainContent}
     `.trim();
 
     const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `mixed_${fileName || 'content'}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    saveAs(blob, `mixed_${fileName.split('.')[0] || 'content'}.txt`);
+  };
+
+  const handleExportWord = () => {
+    if (!result) return;
+
+    // Create a simple HTML document that Word can open
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='utf-8'><title>${result.title}</title></head>
+      <body style="font-family: 'Times New Roman', serif;">
+        <h1 style="font-size: 24pt; font-weight: bold; margin-bottom: 20pt;">${result.title}</h1>
+        <div style="background: #f0f7ff; padding: 15pt; border: 1pt solid #cce4ff; margin-bottom: 20pt; font-style: italic;">
+          <strong>Mô tả ngắn:</strong> ${result.shortDescription}
+        </div>
+        <div style="margin-bottom: 20pt;">
+          <strong>Mô tả chi tiết:</strong> ${result.detailedDescription}
+        </div>
+        <hr style="margin-bottom: 20pt;">
+        <div class="content">
+          ${result.mainContent}
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff', htmlContent], {
+      type: 'application/msword'
+    });
+    
+    saveAs(blob, `mixed_${fileName.split('.')[0] || 'content'}.doc`);
   };
 
   const copyToClipboard = (text: string) => {
@@ -120,7 +168,7 @@ ${result.mainContent}
                 Nội dung đầu vào
               </h2>
               <p className="text-gray-500 text-sm">
-                Tải lên tệp .txt hoặc dán nội dung trực tiếp để bắt đầu mix lại bài viết chuẩn SEO.
+                Tải lên tệp .txt, .doc, .docx hoặc dán nội dung trực tiếp để bắt đầu mix lại bài viết chuẩn SEO.
               </p>
             </div>
 
@@ -134,7 +182,7 @@ ${result.mainContent}
                   type="file" 
                   ref={fileInputRef}
                   onChange={handleFileUpload}
-                  accept=".txt"
+                  accept=".txt,.doc,.docx"
                   className="hidden"
                 />
                 <div className="flex flex-col items-center gap-3">
@@ -143,9 +191,9 @@ ${result.mainContent}
                   </div>
                   <div>
                     <p className="font-semibold text-gray-700">
-                      {fileName ? fileName : 'Nhấp để tải tệp .txt'}
+                      {fileName ? fileName : 'Nhấp để tải tệp .txt, .doc, .docx'}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Hỗ trợ định dạng văn bản thuần túy</p>
+                    <p className="text-xs text-gray-400 mt-1">Hỗ trợ định dạng văn bản và Word</p>
                   </div>
                 </div>
               </div>
@@ -303,14 +351,34 @@ ${result.mainContent}
                       </div>
                     </div>
 
-                    {/* Export Button */}
-                    <button
-                      onClick={handleExport}
-                      className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all shadow-xl active:scale-[0.98]"
-                    >
-                      <Download size={20} />
-                      Xuất tệp .txt (HTML)
-                    </button>
+                    {/* Preview & Export Buttons */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => setShowPreview(true)}
+                        className="w-full py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-50 transition-all active:scale-[0.98]"
+                      >
+                        <Eye size={20} />
+                        Xem trước HTML
+                      </button>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          onClick={handleExportTxt}
+                          className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all shadow-xl active:scale-[0.98]"
+                        >
+                          <Download size={20} />
+                          Xuất tệp .txt
+                        </button>
+
+                        <button
+                          onClick={handleExportWord}
+                          className="w-full py-4 bg-green-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-[0.98]"
+                        >
+                          <FileDown size={20} />
+                          Xuất tệp Word
+                        </button>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -318,6 +386,65 @@ ${result.mainContent}
           </section>
         </div>
       </main>
+
+      {/* HTML Preview Modal */}
+      <AnimatePresence>
+        {showPreview && result && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                    <Eye size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">Xem trước nội dung trực quan</h3>
+                    <p className="text-xs text-gray-400">Hiển thị định dạng HTML thực tế</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowPreview(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 md:p-12 bg-white custom-scrollbar">
+                <article className="prose prose-blue max-w-none">
+                  <h1 className="text-3xl font-black mb-6 text-gray-900 leading-tight">{result.title}</h1>
+                  <div className="mb-8 p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50 italic text-gray-600 leading-relaxed">
+                    {result.shortDescription}
+                  </div>
+                  <div 
+                    className="preview-content"
+                    dangerouslySetInnerHTML={{ __html: result.mainContent }} 
+                  />
+                </article>
+              </div>
+
+              <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-8 py-3 bg-[#1A1A1A] text-white rounded-xl font-bold hover:bg-black transition-all active:scale-[0.95]"
+                >
+                  Đóng bản xem trước
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <footer className="max-w-5xl mx-auto px-4 py-12 border-t border-gray-200 mt-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -347,6 +474,41 @@ ${result.mainContent}
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #CCC;
+        }
+        
+        .preview-content h2 {
+          font-size: 1.5rem;
+          font-weight: 800;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          color: #111;
+          line-height: 1.3;
+        }
+        .preview-content h3 {
+          font-size: 1.25rem;
+          font-weight: 700;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+          color: #222;
+        }
+        .preview-content h4 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          margin-top: 1.25rem;
+          margin-bottom: 0.5rem;
+          color: #333;
+        }
+        .preview-content p {
+          margin-bottom: 1.25rem;
+          line-height: 1.7;
+          color: #444;
+        }
+        .preview-content ul, .preview-content ol {
+          margin-bottom: 1.25rem;
+          padding-left: 1.5rem;
+        }
+        .preview-content li {
+          margin-bottom: 0.5rem;
         }
       `}} />
     </div>
