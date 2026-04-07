@@ -1,0 +1,5 @@
+{
+  "name": "SEO Content Mixer",
+  "description": "Mix and rewrite articles for SEO optimization using Gemini AI. Supports .txt input and HTML-formatted .txt export.",
+  "requestFramePermissions": []
+}
