@@ -38,12 +38,14 @@ export async function mixContent(originalText: string): Promise<MixedContent> {
   const gpt = getGPT();
 
   const prompt = `
-    Bạn là một chuyên gia SEO và Content Writer chuyên nghiệp cấp cao. 
+    Bạn là một chuyên gia SEO và Content Writer chuyên nghiệp cấp cao trong lĩnh vực Công nghệ thông tin và Thiết kế Website. 
     Nhiệm vụ của bạn là viết lại (mix/spin) nội dung bài viết dưới đây để tối ưu SEO, đảm bảo tỷ lệ không trùng lặp (unique) cao nhưng vẫn giữ nguyên giá trị thông tin.
     
     YÊU CẦU QUAN TRỌNG:
-    1. TƯƠNG ĐƯƠNG BẢN GỐC: Nội dung mới phải có cấu trúc và ý nghĩa tương đương hoàn toàn với bản gốc. Không được rút gọn, không được thêm thắt các ý kiến cá nhân làm sai lệch thông tin.
-    2. GIỮ NGUYÊN THÔNG TIN CÔNG TY: Toàn bộ các thông tin liên quan đến công ty (Tên công ty, địa chỉ, số điện thoại, email, website, mã số thuế, v.v.) PHẢI ĐƯỢC GIỮ NGUYÊN 100%, KHÔNG ĐƯỢC THAY ĐỔI DÙ CHỈ MỘT KÝ TỰ.
+    1. ĐẶC THÙ NGÀNH WEBSITE: Đây là nội dung chuyên ngành về website/công nghệ. Bạn phải cực kỳ cẩn thận với các thuật ngữ kỹ thuật (ví dụ: Hosting, Domain, Source code, UI/UX, CMS, v.v.). KHÔNG ĐƯỢC thay đổi các thuật ngữ này sang từ tiếng Việt không sát nghĩa hoặc làm sai lệch bản chất kỹ thuật.
+    2. BẢO TOÀN NGỮ NGHĨA: Việc mix nội dung phải đảm bảo tính logic và độ chính xác cao. Tuyệt đối không vì cố gắng tăng tỷ lệ unique mà làm hư ngữ nghĩa hoặc khiến câu văn trở nên khó hiểu, lủng củng.
+    3. TƯƠNG ĐƯƠNG BẢN GỐC: Nội dung mới phải có cấu trúc và ý nghĩa tương đương hoàn toàn với bản gốc. Không được rút gọn, không được thêm thắt các ý kiến cá nhân làm sai lệch thông tin.
+    4. GIỮ NGUYÊN THÔNG TIN CÔNG TY: Toàn bộ các thông tin liên quan đến công ty (Tên công ty, địa chỉ, số điện thoại, email, website, mã số thuế, v.v.) PHẢI ĐƯỢC GIỮ NGUYÊN 100%, KHÔNG ĐƯỢC THAY ĐỔI DÙ CHỈ MỘT KÝ TỰ.
     3. KỸ THUẬT MIX NỘI DUNG: Chỉ thay đổi một số từ ngữ, cụm từ bằng các từ đồng nghĩa hoặc thay đổi cấu trúc câu một cách khéo léo để tránh bị Google đánh giá là nội dung trùng lặp (duplicate content).
     4. TIÊU ĐỀ: Sáng tạo tiêu đề mới hấp dẫn, chứa từ khóa chính, kích thích click (CTR).
     5. MÔ TẢ NGẮN (META DESCRIPTION): Viết mô tả ngắn gọn trong khoảng 150-160 ký tự, chứa từ khóa chính.
