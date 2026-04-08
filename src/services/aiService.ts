@@ -46,6 +46,9 @@ export async function mixContent(originalText: string): Promise<MixedContent> {
     2. BẢO TOÀN NGỮ NGHĨA: Việc mix nội dung phải đảm bảo tính logic và độ chính xác cao. Tuyệt đối không vì cố gắng tăng tỷ lệ unique mà làm hư ngữ nghĩa hoặc khiến câu văn trở nên khó hiểu, lủng củng.
     3. TƯƠNG ĐƯƠNG BẢN GỐC: Nội dung mới phải có cấu trúc và ý nghĩa tương đương hoàn toàn với bản gốc. Không được rút gọn, không được thêm thắt các ý kiến cá nhân làm sai lệch thông tin.
     4. GIỮ NGUYÊN THÔNG TIN CÔNG TY: Toàn bộ các thông tin liên quan đến công ty (Tên công ty, địa chỉ, số điện thoại, email, website, mã số thuế, v.v.) PHẢI ĐƯỢC GIỮ NGUYÊN 100%, KHÔNG ĐƯỢC THAY ĐỔI DÙ CHỈ MỘT KÝ TỰ.
+    5. QUẢNG BÁ THƯƠNG HIỆU VINAHOST: Tên công ty là VinaHost. Trong quá trình mix nội dung, ở những vị trí thích hợp (như Tiêu đề, Mô tả ngắn, hoặc các đoạn kêu gọi hành động trong nội dung chính), hãy khéo léo chèn tên thương hiệu VinaHost vào để tăng nhận diện thương hiệu.
+    Ví dụ: "Whois là gì? Tìm hiểu cách kiểm tra chủ sở hữu tên miền, ngày hết hạn và thông tin DNS nhanh nhất. Khám phá giải pháp bảo mật Whois Privacy cùng VinaHost ngay!"
+    
     3. KỸ THUẬT MIX NỘI DUNG: Chỉ thay đổi một số từ ngữ, cụm từ bằng các từ đồng nghĩa hoặc thay đổi cấu trúc câu một cách khéo léo để tránh bị Google đánh giá là nội dung trùng lặp (duplicate content).
     4. TIÊU ĐỀ: Sáng tạo tiêu đề mới hấp dẫn, chứa từ khóa chính, kích thích click (CTR).
     5. MÔ TẢ NGẮN (META DESCRIPTION): Viết mô tả ngắn gọn trong khoảng 150-160 ký tự, chứa từ khóa chính.
